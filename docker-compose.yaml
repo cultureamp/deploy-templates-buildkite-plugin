@@ -1,0 +1,11 @@
+services:
+  lint:
+    image: buildkite/plugin-linter
+    command: ['--id', 'cultureamp/deploy-templates']
+    volumes:
+      - ".:/plugin:ro"
+
+  tests:
+    build: .
+    volumes:
+      - ".:/plugin:ro"
