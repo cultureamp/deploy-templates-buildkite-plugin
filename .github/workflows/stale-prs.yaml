@@ -1,0 +1,24 @@
+name: Close stale PRs
+
+on:
+  schedule:
+    - cron: "0 0 * * 2,4" # every TUE and THU at 00:00 UTC
+  workflow_dispatch:
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v8.0.0
+        with:
+          ascending: true # process older issues and PRs first
+          stale-issue-label: stale
+          stale-pr-label: stale
+          exempt-pr-labels: no-stale
+          stale-pr-message: "This PR is stale and will be closed in 7 days. To permanently exempt this PR, add the `no-stale` label."
+          close-pr-message: "This PR has been closed due to prolonged inactivity."
+          days-before-stale: -1 # DO NOT automatically stale issues and PRs
+          days-before-close: -1 # DO NOT automatically close issues and PRs
+          days-before-pr-stale: 60 # DO automatically stale PRs only
+          days-before-pr-close: 7 # DO automatically close PRs only
+          operations-per-run: 120

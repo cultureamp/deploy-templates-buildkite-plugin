@@ -1,0 +1,29 @@
+
+plugins:
+- "@semantic-release/commit-analyzer"
+- "@semantic-release/release-notes-generator"
+- "@semantic-release/github"
+
+analyzeCommits:
+  - path: "@semantic-release/commit-analyzer"
+    preset: angular
+    releaseRules:
+    - type: chore
+      release: patch
+generateNotes:
+  - path: "@semantic-release/release-notes-generator"
+    preset: conventionalcommits
+    presetConfig:
+      types:
+      - type: "feat"
+        section: ":sparkles: Features"
+      - type: "fix"
+        section: ":bug: Bug Fixes"
+      - type: "chore"
+        section: ":fast_forward: Dependency Updates"
+        hidden: false
+
+branches:
+  - name: main
+ci: false
+dryRun: false
