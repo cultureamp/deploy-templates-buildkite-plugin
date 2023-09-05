@@ -1,0 +1,13 @@
+{
+  "@cultureamp/generator-templates": {
+    "version": "0.39.0",
+    "namespace": "@cultureamp/templates:basic",
+    "projectSlug": "deploy-templates",
+    "description": "A public custom buildkite plugin to handle the deployment configuration ",
+    "team": "sre-enablement",
+    "camp": "FOUNDATIONS",
+    "assetCriticality": "LOW",
+    "dataClassification": "NONE",
+    "lifecycle": "experimental"
+  }
+}
