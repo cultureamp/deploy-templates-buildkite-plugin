@@ -7,10 +7,11 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "docker-compose run --rm lint",
+    "test": "docker-compose run --rm tests"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "https://github.com/cultureamp",
+  "license": "MIT",
   "dependencies": {
     "semantic-release": "^21.1.1"
   }
