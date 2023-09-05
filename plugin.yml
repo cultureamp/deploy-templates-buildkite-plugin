@@ -1,0 +1,15 @@
+name: Deploy Templates
+description: Deploy to multiple different environments using templates.
+author: https://github.com/cultureamp
+requirements: []
+configuration:
+  properties:
+    step-template:
+      type: string
+    step-var-names:
+      type: array
+    auto-selections:
+      type: array
+    selector-template:
+      type: string
+  additionalProperties: false
