@@ -1,0 +1,14 @@
+{
+  "name": "deploy-templates-buildkite-plugin",
+  "version": "1.0.0",
+  "description": "deploy-templates buildkite plugin",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
