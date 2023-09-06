@@ -13,6 +13,7 @@
   "author": "https://github.com/cultureamp",
   "license": "MIT",
   "dependencies": {
+    "conventional-changelog-conventionalcommits": "^7.0.1",
     "semantic-release": "^21.1.1"
   }
 }
