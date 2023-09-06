@@ -30,7 +30,7 @@ teardown() {
 }
 
 @test "Fails when selector or autos not provided" {
-  export BUILDKITE_PLUGIN_STEP_TEMPLATES_STEP_TEMPLATE="step-template.yaml"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_STEP_TEMPLATE="step-template.yaml"
 
   run "$PWD/hooks/command"
 
@@ -39,9 +39,9 @@ teardown() {
 }
 
 @test "Writes steps from auto selections" {
-  export BUILDKITE_PLUGIN_STEP_TEMPLATES_STEP_TEMPLATE="/tmp/step-template.yaml"
-  export BUILDKITE_PLUGIN_STEP_TEMPLATES_AUTO_SELECTIONS_0="auto-one"
-  export BUILDKITE_PLUGIN_STEP_TEMPLATES_AUTO_SELECTIONS_1="auto-two"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_STEP_TEMPLATE="/tmp/step-template.yaml"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_SELECTIONS_0="auto-one"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_SELECTIONS_1="auto-two"
 
   run "$PWD/hooks/command"
 
@@ -51,9 +51,9 @@ teardown() {
 }
 
 @test "Writes additional branch variable for auto selections" {
-  export BUILDKITE_PLUGIN_STEP_TEMPLATES_STEP_TEMPLATE="/tmp/step-template.yaml"
-  export BUILDKITE_PLUGIN_STEP_TEMPLATES_AUTO_SELECTIONS_0="auto-one"
-  export BUILDKITE_PLUGIN_STEP_TEMPLATES_AUTO_SELECTIONS_1="auto-two"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_STEP_TEMPLATE="/tmp/step-template.yaml"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_SELECTIONS_0="auto-one"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_SELECTIONS_1="auto-two"
   export BUILDKITE_PIPELINE_DEFAULT_BRANCH="default-branch"
 
   run "$PWD/hooks/command"
@@ -64,8 +64,8 @@ teardown() {
 }
 
 @test "Writes steps from meta-data selections" {
-  export BUILDKITE_PLUGIN_STEP_TEMPLATES_STEP_TEMPLATE="/tmp/step-template.yaml"
-  export BUILDKITE_PLUGIN_STEP_TEMPLATES_SELECTOR_TEMPLATE="/tmp/selector-template.yaml"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_STEP_TEMPLATE="/tmp/step-template.yaml"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_SELECTOR_TEMPLATE="/tmp/selector-template.yaml"
 
   run "$PWD/hooks/command"
 

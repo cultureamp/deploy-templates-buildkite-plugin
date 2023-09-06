@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-plugin_prefix="BUILDKITE_PLUGIN_STEP_TEMPLATES_"
+plugin_prefix="BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_"
 
 # Shorthand for reading env config
 function plugin_read_config() {
