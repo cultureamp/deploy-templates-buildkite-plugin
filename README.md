@@ -17,3 +17,6 @@ This project uses [semantic-release](https://github.com/semantic-release/semanti
 
 A repository dispatch event configuration has been enabled for the release. This provides a `manual` trigger that can be used to trigger a manual release. Follow the [docs](https://github.com/semantic-release/semantic-release/blob/master/docs/recipes/ci-configurations/github-actions.md#trigger-semantic-release-on-demand) to use the github web app or api for more details.
 
+## Support
+
+This is an internal plugin used for Culture Amp CI purposes and is not designed for external use.
