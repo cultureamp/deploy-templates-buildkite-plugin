@@ -1,0 +1,18 @@
+{
+  "name": "deploy-templates-buildkite-plugin",
+  "version": "1.0.0",
+  "description": "deploy-templates buildkite plugin",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "lint": "docker-compose run --rm lint",
+    "test": "docker-compose run --rm tests"
+  },
+  "author": "https://github.com/cultureamp",
+  "license": "MIT",
+  "dependencies": {
+    "semantic-release": "^21.1.1"
+  }
+}
