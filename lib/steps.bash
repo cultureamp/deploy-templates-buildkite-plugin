@@ -52,13 +52,21 @@ function write_steps() {
           export "${var_name^^}"="${val}"
         done
 
-        # find env file based on location of template
-        local env_file; env_file="$(env_filename_for_environment "${template}" "${step_env}")"
-        if [[ -f "${env_file}" ]]; then
-          echo "=> loading ${env_file} into environment..."
-          load_env_file "${env_file}"
+        if [[ -n "${BUILDKITE_DEPLOY_TEMPLATE_BUCKET:-}" ]]; then
+          ENV_CONFIG_FILE="${BUILDKITE_DEPLOY_TEMPLATE_BUCKET}/${STEP_ENVIRONMENT}.env"
+          echo "=> Downloading .env file from S3..."
+          echo "loading central config ${ENV_CONFIG_FILE} into environment..."
+          aws s3 cp "${ENV_CONFIG_FILE}" .
+          load_env_file "${STEP_ENVIRONMENT}".env
         else
-          echo "=> env file ${env_file} not found, skipping load."
+          echo "=> BUILDKITE_DEPLOY_TEMPLATE_BUCKET is not set, skipping .env file download."
+        fi
+
+        local env_file; env_file="$(env_filename_for_environment "${template}" "${step_env}")"
+
+        if [[ -f "${env_file}" ]]; then
+          echo "=> loading local ${env_file} into environment..."
+          load_env_file "${env_file}"
         fi
 
         buildkite-agent pipeline upload "${template}"
