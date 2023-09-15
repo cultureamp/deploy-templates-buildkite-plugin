@@ -57,7 +57,7 @@ function write_steps() {
           echo "=> Downloading .env file from S3..."
           echo "loading central config ${ENV_CONFIG_FILE} into environment..."
           aws s3 cp "${ENV_CONFIG_FILE}" .
-          load_env_file "${STEP_ENVIRONMENT}".env
+          load_env_file "${STEP_ENVIRONMENT}.env"
         else
           echo "=> BUILDKITE_DEPLOY_TEMPLATE_BUCKET is not set, skipping .env file download."
         fi
