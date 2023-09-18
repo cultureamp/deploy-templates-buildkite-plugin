@@ -54,6 +54,7 @@ function write_steps() {
 
         # find env file based on location of template
         if [[ -n "${BUILDKITE_DEPLOY_TEMPLATE_BUCKET:-}" ]]; then
+          echo "BUCKET: $BUILDKITE_DEPLOY_TEMPLATE_BUCKET"
           ENV_CONFIG_FILE="${BUILDKITE_DEPLOY_TEMPLATE_BUCKET}/${STEP_ENVIRONMENT}.env"
           echo "=> Downloading .env file from S3..."
           echo "loading central config ${ENV_CONFIG_FILE} into environment..."
