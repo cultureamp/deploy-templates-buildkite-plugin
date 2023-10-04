@@ -55,10 +55,18 @@ function write_steps() {
         # find env file based on location of template
         if [[ -n "${BUILDKITE_DEPLOY_TEMPLATE_BUCKET:-}" ]]; then
           echo "BUCKET: $BUILDKITE_DEPLOY_TEMPLATE_BUCKET"
+          echo "ENV: ${STEP_ENVIRONMENT}"
           ENV_CONFIG_FILE="${BUILDKITE_DEPLOY_TEMPLATE_BUCKET}/${STEP_ENVIRONMENT}.env"
+          echo "S3 PATH: ${ENV_CONFIG_FILE}"
           echo "=> Downloading .env file from S3..."
+          
+          set +e
+          aws s3 cp "${ENV_CONFIG_FILE}" . 
+          echo "Unable to copy the requested env file from S3. Check 'bucket' and 'env' values are accurate and exist."
+          exit 42
+          set -e
+          
           echo "loading central config ${ENV_CONFIG_FILE} into environment..."
-          aws s3 cp "${ENV_CONFIG_FILE}" .
           load_env_file "${STEP_ENVIRONMENT}.env"
         else
           echo "=> BUILDKITE_DEPLOY_TEMPLATE_BUCKET is not set, skipping .env file download."
