@@ -58,12 +58,17 @@ function write_steps() {
           echo "ENV: ${STEP_ENVIRONMENT}"
           ENV_CONFIG_FILE="${BUILDKITE_DEPLOY_TEMPLATE_BUCKET}/${STEP_ENVIRONMENT}.env"
           echo "S3 PATH: ${ENV_CONFIG_FILE}"
+
           echo "=> Downloading .env file from S3..."
-          
           set +e
           aws s3 cp "${ENV_CONFIG_FILE}" . 
-          echo "Unable to copy the requested env file from S3. Check 'bucket' and 'env' values are accurate and exist."
-          exit 42
+          if [[ $? -ne 0 ]]; then
+            find ./.buildkite -name "${STEP_ENVIRONMENT}.env" | grep .
+            if [[ $? -ne 0 ]]; then
+              echo "Unable to locate an env file. Unable to access the default env file from S3 or find one locally in the '.buildkite' folder. See FAQs for guidance - https://cultureamp.atlassian.net/wiki/spaces/PST/pages/2960916852/Central+SRE+Support+FAQs"
+              exit 42
+            fi
+          fi
           set -e
           
           echo "loading central config ${ENV_CONFIG_FILE} into environment..."
