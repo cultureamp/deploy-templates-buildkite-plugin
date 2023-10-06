@@ -1,15 +1,15 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: "deploy-templates"
+  name: deploy-templates
   description: "A public custom buildkite plugin to handle the deployment configuration "
-  links: # add any links that would be useful here. Dashboards, site urls etc
+  links:
     - title: Source
-      url: "https://github.com/cultureamp/deploy-templates"
+      url: https://github.com/cultureamp/deploy-templates
   tags:
-    - camp-foundations
-    - data-classification-none
     - asset-criticality-low
+    - camp-sre
+    - data-classification-none
   annotations:
     github.com/project-slug: deploy-templates
     github.com/team-slug: cultureamp/sre-enablement
