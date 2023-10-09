@@ -81,7 +81,7 @@ function write_steps() {
 
         if [[ -f "${env_file}" ]]; then
           echo "=> loading local ${env_file} into environment..."
-          load_env_file "${env_file}"
+          load_env_file "${env_file}" || true
         fi
 
         buildkite-agent pipeline upload "${template}"

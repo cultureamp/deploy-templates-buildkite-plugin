@@ -35,3 +35,17 @@ load '../lib/steps'
     assert_equal "${twospace}" "second two"
     assert_equal "${threespace}" "third three"
 }
+
+@test "load_env_file loads file containing only comments without error" {
+    run load_env_file "./tests/fixtures/env/commented.env"
+
+    assert_success
+    assert_output --partial "loaded"
+}
+
+@test "load_env_file loads file with no content without error" {
+    run load_env_file "./tests/fixtures/env/empty.env"
+
+    assert_success
+    assert_output --partial "loaded"
+}

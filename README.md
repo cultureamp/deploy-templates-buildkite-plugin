@@ -7,7 +7,7 @@ TBA: Add examples
 ```yaml
 steps:
   - plugins:
-      - cultureamp/deploy-templates#v1.0.0:
+      - cultureamp/deploy-templates#v1.0.4:
 
 ```
 
