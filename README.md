@@ -27,3 +27,17 @@ This plugin makes use of a centralised method to pull config for repos.
 Utilising Buildkite agents, an environment variable (`BUILDKITE_DEPLOY_TEMPLATE_BUCKET`) is set on the agent where config is uploaded, which allows for this plugin to pull config from.
 
 To see the associated code, see [here](https://github.com/cultureamp/deploy-templates-buildkite-plugin/blob/551dd75523334bf41709d84dcc2503ae477ef048/lib/steps.bash#L56)
+
+## Environment variable behavior
+### Load order of .env files
+
+If an .env file is found in S3, it will be loaded first.
+Then if an .env file is found in the local repo it will be loaded second, overriding any vars previously loaded.
+
+### Behavior depending on .env file contents
+
+This plugin currently requires an `.env` file matching the STEP_ENVIRONMENT name to be present either in the configured S3 bucket, or alongside the step_template file in the repository's .buildkite folder.
+
+If the file is not found in S3, the plugin will check for a matching file in the local repo. If there aren't matching files in either location, the plugin will return an error and prevent further deployment.
+
+Environment files containing only empty lines, or only comments, will not be loaded.
