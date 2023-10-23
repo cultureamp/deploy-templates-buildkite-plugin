@@ -8,7 +8,6 @@ TBA: Add examples
 steps:
   - plugins:
       - cultureamp/deploy-templates#v1.0.0:
-
 ```
 
 ## Release Management
@@ -22,8 +21,21 @@ A repository dispatch event configuration has been enabled for the release. This
 This is an internal plugin used for Culture Amp CI purposes and is not designed for external use.
 
 ## Config for repos
+
 This plugin makes use of a centralised method to pull config for repos.
 
 Utilising Buildkite agents, an environment variable (`BUILDKITE_DEPLOY_TEMPLATE_BUCKET`) is set on the agent where config is uploaded, which allows for this plugin to pull config from.
 
 To see the associated code, see [here](https://github.com/cultureamp/deploy-templates-buildkite-plugin/blob/551dd75523334bf41709d84dcc2503ae477ef048/lib/steps.bash#L56)
+
+# Conversion to Go
+
+## New Structure
+
+`/lib/go.bash` - library of bash functions specific to using the golang via the command hook.
+
+`/src/` - folder for containing the Go code.
+
+TODO: Add Go specific Github Actions (lint, test, release). [here](https://github.com/cultureamp/example-go-buildkite-plugin/blob/fecfbd2dbffa6c35d82a0de5585201ca29ab8254/.github/workflows)
+
+TODO: Migrate functionality from Bash to Golang
