@@ -12,8 +12,8 @@ func TestFailOnMissingEnvironment(t *testing.T) {
 	var config plugin.Config
 	fetcher := plugin.EnvironmentConfigFetcher{}
 
-	t.Setenv("BUILDKITE_PLUGIN_EXAMPLE_GO_MESSAGE", "")
-	os.Unsetenv("BUILDKITE_PLUGIN_EXAMPLE_GO_MESSAGE")
+	t.Setenv("MESSAGE", "")
+	os.Unsetenv("MESSAGE")
 
 	err := fetcher.Fetch(&config)
 
@@ -24,7 +24,7 @@ func TestFetchConfigFromEnvironment(t *testing.T) {
 	var config plugin.Config
 	fetcher := plugin.EnvironmentConfigFetcher{}
 
-	t.Setenv("BUILDKITE_PLUGIN_EXAMPLE_GO_MESSAGE", "test-message")
+	t.Setenv("MESSAGE", "test-message")
 
 	err := fetcher.Fetch(&config)
 
