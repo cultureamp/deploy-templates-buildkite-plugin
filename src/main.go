@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	os.Setenv("BUILDKITE_PLUGIN_EXAMPLE_GO", "works :shrug:")
 	ctx := context.Background()
 	agent := &buildkite.Agent{}
 	fetcher := plugin.EnvironmentConfigFetcher{}
