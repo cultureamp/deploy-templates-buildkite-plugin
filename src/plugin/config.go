@@ -11,7 +11,7 @@ type Config struct {
 type EnvironmentConfigFetcher struct {
 }
 
-const pluginEnvironmentPrefix = "BUILDKITE_PLUGIN_EXAMPLE_GO"
+const pluginEnvironmentPrefix = "MESSAGE"
 
 func (f EnvironmentConfigFetcher) Fetch(config *Config) error {
 	return envconfig.Process(pluginEnvironmentPrefix, config)
