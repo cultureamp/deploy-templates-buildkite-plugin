@@ -38,4 +38,5 @@ To see the associated code, see [here](https://github.com/cultureamp/deploy-temp
 
 TODO: Add Go specific Github Actions (lint, test, release). [here](https://github.com/cultureamp/example-go-buildkite-plugin/blob/fecfbd2dbffa6c35d82a0de5585201ca29ab8254/.github/workflows)
 
+TODO: Test pre-release plugin in buildkite
 TODO: Migrate functionality from Bash to Golang

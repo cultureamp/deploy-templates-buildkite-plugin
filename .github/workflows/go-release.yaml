@@ -3,7 +3,7 @@ name: release-version
 on:
   push:
     tags:
-      - "go/v*"
+      - "v*"
 
 jobs:
   publish:
