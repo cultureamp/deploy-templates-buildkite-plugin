@@ -1,6 +1,5 @@
 builds:
-  - binary: example-go-buildkite-plugin
-    env:
+  - env:
       - CGO_ENABLED=0
     goos:
       - linux
