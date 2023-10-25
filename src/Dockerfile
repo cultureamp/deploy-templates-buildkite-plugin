@@ -18,13 +18,13 @@ COPY . ./
 # build as a static binary without debug symbols
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
       -ldflags='-w -s -extldflags "-static"' -a \
-      -o /dist/examplego .
+      -o /dist/deploy-templates .
 
 # runtime image using static distroless base
 # using static nonroot image
 # user:group is nobody:nobody, uid:gid = 65534:65534
 FROM ${DISTROLESS_IMAGE}
 
-COPY --from=builder /dist/examplego /examplego
+COPY --from=builder /dist/deploy-templates /deploy-templates
 
-ENTRYPOINT ["/examplego"]
+ENTRYPOINT ["/deploy-templates"]

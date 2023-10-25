@@ -3,7 +3,7 @@ package plugin
 import (
 	"context"
 
-	"github.com/cultureamp/examplego/buildkite"
+	"github.com/cultureamp/deploy-templates-buildkite-plugin/src/buildkite"
 )
 
 type ExamplePlugin struct {

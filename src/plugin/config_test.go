@@ -4,7 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cultureamp/examplego/plugin"
+	"github.com/cultureamp/deploy-templates-buildkite-plugin/src/plugin"
+
 	"github.com/stretchr/testify/assert"
 )
 

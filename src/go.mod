@@ -1,4 +1,4 @@
-module github.com/cultureamp/examplego
+module github.com/cultureamp/deploy-templates-buildkite-plugin/src
 
 go 1.20
 
