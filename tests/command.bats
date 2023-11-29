@@ -29,13 +29,13 @@ teardown() {
   assert_output --partial "No 'step_template' argument provided"
 }
 
-@test "Fails when selector or autos not provided" {
+@test "Fails when selector, autos or auto-deploy-prod not provided" {
   export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_STEP_TEMPLATE="step-template.yaml"
 
   run "$PWD/hooks/command"
 
   assert_failure
-  assert_output --partial "selector-template nor auto-selections specified"
+  assert_output --partial "None of the properties 'selector-template', 'auto-deploy-to-production' or 'auto-selections' are specified: nothing to do."
 }
 
 @test "Writes steps from auto selections" {
@@ -72,4 +72,30 @@ teardown() {
   assert_success
   assert_output --partial "stubenv(select-one): STEP_ENVIRONMENT=select-one"
   assert_output --partial "stubenv(select-two): STEP_ENVIRONMENT=select-two"
+}
+
+@test "Writes steps from deployment-type selections" {
+  export BUILDKITE_PIPELINE_SLUG="./tests/fixtures/deploy-types/service-a"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_STEP_TEMPLATE="/tmp/step-template.yaml"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_DEPLOY_TO_PRODUCTION=true
+  export RUNNING_TESTS_YO=true
+
+  run "$PWD/hooks/command"
+
+  assert_success
+  assert_line "stubenv(quick): STEP_ENVIRONMENT=quick"
+  assert_line "stubenv(so-fast): STEP_ENVIRONMENT=so-fast"
+  assert_line "FARM=\"production\""
+}
+
+@test "Fails when both autos and deploy type provided" {
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_STEP_TEMPLATE="step-template.yaml"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_DEPLOY_TO_PRODUCTION=true
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_SELECTIONS_0="auto-one"
+  export RUNNING_TESTS_YO=true
+
+  run "$PWD/hooks/command"
+
+  assert_failure
+  assert_output --partial "Conflict: cannot specify both 'auto-deploy-to-production' and 'auto-selections'"
 }

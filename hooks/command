@@ -7,11 +7,14 @@ DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 . "$DIR/../lib/shared.bash"
 # shellcheck source=lib/steps.bash
 . "$DIR/../lib/steps.bash"
+# shellcheck source=lib/targets.bash
+. "$DIR/../lib/targets.bash"
 
 step_template="$(plugin_read_config "STEP_TEMPLATE")"
 selector_template="$(plugin_read_config "SELECTOR_TEMPLATE")"
 step_var_names="$(plugin_read_list "STEP_VAR_NAMES")"
 auto_selections="$(plugin_read_list "AUTO_SELECTIONS")"
+auto_deploy_to_production="$(plugin_read_list "AUTO_DEPLOY_TO_PRODUCTION")"
 
 if [[ -z "${step_template}" ]] ; then
   1>&2 echo "+++ ❌ Step templates plugin error"
@@ -19,9 +22,22 @@ if [[ -z "${step_template}" ]] ; then
   exit 1
 fi
 
-if [[ -z "${selector_template}" ]]  && [[ -z "${auto_selections}" ]] ; then
+if [[ -z "${selector_template}" ]]  && [[ -z "${auto_selections}" ]] && [[ -z "${auto_deploy_to_production}" ]] ; then
   1>&2 echo "+++ ❌ Step templates plugin error"
-  1>&2 echo "Neither selector-template nor auto-selections specified: nothing to do."
+  1>&2 echo "None of the properties 'selector-template', 'auto-deploy-to-production' or 'auto-selections' are specified: nothing to do."
+  exit 1
+fi
+
+if [[ -n "${auto_selections}" ]] && [[ -n "${auto_deploy_to_production}" ]] ; then
+  1>&2 echo "+++ ❌ Step templates plugin error"
+  1>&2 echo "Conflict: cannot specify both 'auto-deploy-to-production' and 'auto-selections'"
+  exit 1
+fi
+
+# Not supporting step-var-names with deployment-types for now; maybe doesn't need to be a failure though?
+if [[ -n "${step_var_names}" ]] && [[ -n "${auto_deploy_to_production}" ]] ; then
+  1>&2 echo "+++ ❌ Step templates plugin error"
+  1>&2 echo "Conflict: 'step-var-names' is not supported when using 'auto-deploy-to-production'"
   exit 1
 fi
 
@@ -43,6 +59,8 @@ if [[ -n "${selector_template}" ]]; then
 fi
 
 # write items selected and held in metadata
+# (refering to the key used in the selector template's block step if available,
+# returning a list of the selections)
 key=""
 if [[ -z "$key" && -f "${selector_template}" ]]; then
   key="$(grep -P -o "(?<=key: )[\w-]+" "${selector_template}" | head -n1 || true)"
@@ -55,6 +73,26 @@ if [[ -n "${key}" ]]; then
   if [[ -n "${selected_environments}" ]]; then
     write_steps "${step_template}" "${step_var_names}" "${selected_environments}"
   fi
+fi
+
+# write steps for the service's production deploy targets
+if [[ "${auto_deploy_to_production}" == true ]]; then
+  (
+    # Only supporting "FARM" env var, and "production" deploy type at this stage
+    selected_deploy_type="production"
+    step_variables="FARM"
+    service_name="${BUILDKITE_PIPELINE_SLUG}"
+
+    echo "Finding deploy targets for production..."
+
+    fetch_deploy_config "${service_name}"
+    deploy_targets="$(fetch_deploy_targets "${service_name}" "${selected_deploy_type}")"
+
+    if [[ -n "${deploy_targets}" ]]; then
+      echo "Writing steps for discovered deploy targets..."
+      write_steps "${step_template}" "${step_variables}" "${deploy_targets}"
+    fi
+  )
 fi
 
 # write auto-selections

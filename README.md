@@ -4,11 +4,14 @@
 
 TBA: Add examples
 
+Example allowing automatic deployment to all production accounts.
 ```yaml
 steps:
   - plugins:
-      - cultureamp/deploy-templates#v1.0.4:
-
+      - cultureamp/deploy-templates#v1.0.5:
+          step-template: .buildkite/deploy/deploy-steps.yaml
+          selector-template: .buildkite/deploy/deploy-selector.yaml
+          auto-deploy-to-production: true
 ```
 
 ## Release Management
