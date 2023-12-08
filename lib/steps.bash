@@ -53,10 +53,10 @@ function write_steps() {
         done
 
         # Find env file based on the location of the template
-        if [[ -n "${BUILDKITE_DEPLOY_TEMPLATE_BUCKET:-}" ]]; then
-          download_and_load_env_file "${BUILDKITE_DEPLOY_TEMPLATE_BUCKET}" "${STEP_ENVIRONMENT}"
+        if [[ -n "${BUILDKITE_DEPLOY_CONFIG_S3_PATH:-}" ]]; then
+          download_and_load_env_file "${BUILDKITE_DEPLOY_CONFIG_S3_PATH}" "${STEP_ENVIRONMENT}"
         else
-          echo "=> BUILDKITE_DEPLOY_TEMPLATE_BUCKET is not set, skipping .env file download."
+          echo "=> BUILDKITE_DEPLOY_CONFIG_S3_PATH is not set, skipping .env file download."
         fi
 
         # Load local env file
@@ -113,13 +113,13 @@ function load_env_file() {
 
 # Download and load environment files from configured S3 bucket
 function download_and_load_env_file() {
-  local s3_bucket="${1}"
+  local s3_bucket_path="${1}/environments"
   local step_environment="${2}"
   
-  echo "BUCKET: ${s3_bucket}"
+  echo "BUCKET: ${s3_bucket_path}"
   echo "ENV: ${step_environment}"
   
-  local env_config_file="${s3_bucket}/${step_environment}.env"
+  local env_config_file="${s3_bucket_path}/${step_environment}.env"
   
   echo "S3 PATH: ${env_config_file}"
 

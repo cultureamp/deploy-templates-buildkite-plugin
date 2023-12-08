@@ -24,7 +24,19 @@ This is an internal plugin used for Culture Amp CI purposes and is not designed 
 ## Config for repos
 This plugin makes use of a centralised method to pull config for repos.
 
-Utilising Buildkite agents, an environment variable (`BUILDKITE_DEPLOY_TEMPLATE_BUCKET`) is set on the agent where config is uploaded, which allows for this plugin to pull config from.
+Utilising Buildkite agents, an environment variable (`BUILDKITE_DEPLOY_CONFIG_S3_PATH`) is set on the agent where config is uploaded, which allows for this plugin to pull config from.
+
+The expected structure at this path is:
+
+    .${BUILDKITE_DEPLOY_CONFIG_S3_PATH}
+    ├── ...
+    ├── environments
+    │   ├── so-fast.env
+    |   └── ...
+    ├── types
+    │   ├── speedy
+    |   └── ...
+    └── ...
 
 To see the associated code, see [here](https://github.com/cultureamp/deploy-templates-buildkite-plugin/blob/551dd75523334bf41709d84dcc2503ae477ef048/lib/steps.bash#L56)
 
