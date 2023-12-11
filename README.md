@@ -27,64 +27,24 @@ Environment files containing only empty lines, or only comments, will not be loa
 
 ### `step-template` (Type: string, Required)
 
-The template to render for each selected/specified environment. The selected
-environment will be presented as `STEP_ENVIRONMENT`, and additional variables
-will be given as `STEP_VAR_1` to `STEP_VAR_n` unless named otherwise by
-`step-var-names`.
-
-Note that if there a files alongside this YAML file named `STEP_ENVIRONMENT.env`
-the key/value pairs specified therein will be present for the template as
-environment variables.
+See property description from [step-templates plugin](https://github.com/cultureamp/step-templates-buildkite-plugin?tab=readme-ov-file#step-template-required-string).
 
 ### `step-var-names` (Type: string[], Optional, Default: undefined)
 
-The selector can have semi-colon separated values: this names the second
-and subsequent values and avoids the default `STEP_VAR_n` name. The supplied
-names are uppercased.
-
-Thus if the names were `["type", "region"]`, and the value was
-`staging;preprod;us-west-1`, the step template would receive the following
-environment:
-
-```env
-STEP_ENVIRONMENT=staging
-TYPE=preprod
-REGION=us-west-1
-```
-
 > **Note:** When utilizing `auto-deploy-to-production`, `step-var-names` property cannot be used. `FARM` will instead be statically set for use in the template
+
+See property description from [step-templates plugin](https://github.com/cultureamp/step-templates-buildkite-plugin?tab=readme-ov-file#step-var-names-required-string).
 
 ### `auto-selections` (Type: string[], Optional, Default: undefined)
 
-A list of environment pre-selections that will be rendered immediately by the plugin
-using the values specified (semi-colon separated).
+> **Note:** When utilizing `auto-selections`, the `auto-deploy-to-production` property cannot be used.
 
-When a template is rendered as an auto-selection, the value of the standard
-Buildkite variable `BUILDKITE_PIPELINE_DEFAULT_BRANCH` will be copied to an
-environment variable named `AUTO_SELECTION_DEFAULT_BRANCH`. This allows steps
-rendered for auto-selections to use branch filters that work differently. For
-example, a step definition like:
-
-```yaml
-steps:
-  - label: "Deploy to ${STEP_ENVIRONMENT} (${REGION})"
-    command: "bin/ci_deploy"
-    branches: "${AUTO_SELECTION_DEFAULT_BRANCH:-*}"
-```
-
-When output as an auto-selection, it will only run on the default branch. When
-output from a selector, it will run on any branch.
+See property description from [step-templates plugin](https://github.com/cultureamp/step-templates-buildkite-plugin?tab=readme-ov-file#auto-selections-optional-string).
 
 ### `selector-template` (Type: string, Optional, Default: undefined)
 
-A template containing the available environment specified as a Buildkite pipeline
-`block` step that supplies a set of `fields` for selection. The selection may be
-optional.
-
-> **Note:** The value for `key:` has to be unique per pipeline, as it is used as
-the name of the metadata key that the selections are read from. If you use have
-a pipeline with multiple block steps that have options, each of them has to be
-assigned a different value.
+See property description from [step-templates plugin](https://github.com/cultureamp/step-templates-buildkite-plugin?tab=readme-ov-file#selector-template-optional-string
+).
 
 ### `auto-deploy-to-production` (Type: boolean, Optional, Default: false)
 
