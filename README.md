@@ -8,6 +8,21 @@ This plugin aims to extend the functionality from the [step-templates plugin](ht
 
 TODO: explanation on template and selector usage alongside plugin...
 
+## Environment variable behavior
+
+### Load order of .env files
+
+If an .env file is found in S3, it will be loaded first.
+Then if an .env file is found in the local repo it will be loaded second, overriding any vars previously loaded.
+
+### Behavior depending on .env file contents
+
+This plugin currently requires an `.env` file matching the STEP_ENVIRONMENT name to be present either in the configured S3 bucket, or alongside the step_template file in the repository's .buildkite folder.
+
+If the file is not found in S3, the plugin will check for a matching file in the local repo. If there aren't matching files in either location, the plugin will return an error and prevent further deployment.
+
+Environment files containing only empty lines, or only comments, will not be loaded.
+
 ## Plugin Properties
 
 ### `step-template` (Type: string, Required)
@@ -38,7 +53,6 @@ REGION=us-west-1
 ```
 
 > **Note:** When utilizing `auto-deploy-to-production`, `step-var-names` property cannot be used. `FARM` will instead be statically set for use in the template
-
 
 ### `auto-selections` (Type: string[], Optional, Default: undefined)
 
@@ -74,7 +88,15 @@ assigned a different value.
 
 ### `auto-deploy-to-production` (Type: boolean, Optional, Default: false)
 
-TODO: flesh out the property description...
+Whether this deploy-template should be automatically deployed to the service's production accounts.
+
+When enabling this property, it is assumed that the service has had it's deploy
+target configuration added to the central S3 bucket. The Buildkite pipeline slug
+is used to fetch the config from S3. The resulting deploy targets are then
+automatically deployed.
+
+This option will also statically set the `FARM` variable to `production` for each target. This value
+can be overridden on a per target basis by adding `FARM` into a local .env file named after the target.
 
 > **Note:** When utilizing `auto-deploy-to-production`, the `auto-selections` and `step-var-names` properties cannot be used.
 
@@ -114,21 +136,6 @@ steps:
           step-template: .buildkite/deploy/deploy-steps.yaml
           auto-deploy-to-production: true
 ```
-
-## Environment variable behavior
-
-### Load order of .env files
-
-If an .env file is found in S3, it will be loaded first.
-Then if an .env file is found in the local repo it will be loaded second, overriding any vars previously loaded.
-
-### Behavior depending on .env file contents
-
-This plugin currently requires an `.env` file matching the STEP_ENVIRONMENT name to be present either in the configured S3 bucket, or alongside the step_template file in the repository's .buildkite folder.
-
-If the file is not found in S3, the plugin will check for a matching file in the local repo. If there aren't matching files in either location, the plugin will return an error and prevent further deployment.
-
-Environment files containing only empty lines, or only comments, will not be loaded.
 
 ## Developing
 
