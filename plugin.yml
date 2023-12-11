@@ -12,4 +12,17 @@ configuration:
       type: array
     selector-template:
       type: string
+    auto-deploy-to-production:
+      type: boolean
+      default: false
   additionalProperties: false
+  anyOf:
+    - required:
+        - step-template
+        - auto-selections
+    - required:
+        - step-template
+        - selector-template
+    - required:
+        - step-template
+        - auto-deploy-to-production
