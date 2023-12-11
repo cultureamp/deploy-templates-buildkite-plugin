@@ -13,7 +13,7 @@ See property description from [step-templates plugin](https://github.com/culture
 ### `step-var-names` (Type: string[], Optional, Default: undefined)
 
 > **Note:** When utilizing `auto-deploy-to-production`, `step-var-names` property cannot be used. `FARM` will be statically set as `FARM=production`
-> for use in the template. To configure a different FARM for a production deploy target, see <some ref to how FARM can be set in the .env>
+> for use in the template. To configure a different FARM for a production deploy target, see section [Overriding FARM variable when using auto-deploy-to-production](#overriding-farm-variable-when-using-auto-deploy-to-production).
 
 See property description from [step-templates plugin](https://github.com/cultureamp/step-templates-buildkite-plugin?tab=readme-ov-file#step-var-names-required-string).
 
@@ -38,7 +38,7 @@ is used to fetch the config from S3. The resulting deploy targets are then
 automatically deployed.
 
 This option will also statically set the `FARM` variable to `production` for each target. This value
-can be overridden on a per target basis by adding `FARM` into a local .env file named after the target.
+can be overridden on a per target basis by adding `FARM` into a local .env file named after the target. See section [Overriding FARM variable when using auto-deploy-to-production](#overriding-farm-variable-when-using-auto-deploy-to-production).
 
 > **Note:** When utilizing `auto-deploy-to-production`, the `auto-selections` and `step-var-names` properties cannot be used.
 
@@ -49,7 +49,7 @@ The `deploy-templates` plugin is completely backwards compatible with the [step-
 ```yaml
 steps:
   - plugins:
-      - cultureamp/deploy-templates:
+      - cultureamp/deploy-templates#v1.0.5:
           step-template: deploy-steps.yml
           step-var-names: ["type", "region"]
           auto-selections:
@@ -63,7 +63,7 @@ Instead of maintaining a list of production deploy targets in `auto-selections`,
 ```yaml
 steps:
   - plugins:
-      - cultureamp/deploy-templates:
+      - cultureamp/deploy-templates#v1.0.5:
           step-template: .buildkite/deploy/deploy-steps.yaml
           selector-template: .buildkite/deploy/deploy-selector.yaml
           auto-deploy-to-production: true
@@ -74,7 +74,7 @@ Manual deployment by user via `selector-template` may be omitted if not required
 ```yaml
 steps:
   - plugins:
-      - cultureamp/deploy-templates:
+      - cultureamp/deploy-templates#v1.0.5:
           step-template: .buildkite/deploy/deploy-steps.yaml
           auto-deploy-to-production: true
 ```
@@ -117,7 +117,7 @@ If the file is not found in S3, the plugin will check for a matching file in the
 
 Environment files containing only empty lines, or only comments, will not be loaded.
 
-#### Overriding FARM variable when using `auto-deploy-to-production`
+#### Overriding FARM variable when using auto-deploy-to-production
 
 When using the `auto-deploy-to-production` functionality, `FARM` will always be set to `production` for use in the templates.
 This value can be overridden on a per target basis by adding `FARM` into a local .env file named after the target.
