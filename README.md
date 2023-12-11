@@ -4,25 +4,6 @@ Allows deploy steps to be injected into the pipeline based on a common template,
 
 This plugin aims to extend the functionality from the [step-templates plugin](https://github.com/cultureamp/step-templates-buildkite-plugin), with a focus on centralizing and automating deployment config.
 
-## How it works
-
-TODO: explanation on template and selector usage alongside plugin...
-
-## Environment variable behavior
-
-### Load order of .env files
-
-If an .env file is found in S3, it will be loaded first.
-Then if an .env file is found in the local repo it will be loaded second, overriding any vars previously loaded.
-
-### Behavior depending on .env file contents
-
-This plugin currently requires an `.env` file matching the STEP_ENVIRONMENT name to be present either in the configured S3 bucket, or alongside the step_template file in the repository's .buildkite folder.
-
-If the file is not found in S3, the plugin will check for a matching file in the local repo. If there aren't matching files in either location, the plugin will return an error and prevent further deployment.
-
-Environment files containing only empty lines, or only comments, will not be loaded.
-
 ## Plugin Properties
 
 ### `step-template` (Type: string, Required)
@@ -31,7 +12,8 @@ See property description from [step-templates plugin](https://github.com/culture
 
 ### `step-var-names` (Type: string[], Optional, Default: undefined)
 
-> **Note:** When utilizing `auto-deploy-to-production`, `step-var-names` property cannot be used. `FARM` will instead be statically set for use in the template
+> **Note:** When utilizing `auto-deploy-to-production`, `step-var-names` property cannot be used. `FARM` will be statically set as `FARM=production`
+> for use in the template. To configure a different FARM for a production deploy target, see <some ref to how FARM can be set in the .env>
 
 See property description from [step-templates plugin](https://github.com/cultureamp/step-templates-buildkite-plugin?tab=readme-ov-file#step-var-names-required-string).
 
@@ -62,7 +44,7 @@ can be overridden on a per target basis by adding `FARM` into a local .env file 
 
 ## Examples
 
-The `deploy-templates` plugin is completely backwards compatible with the `step-templates` plugin, and can be used with the same configuration:
+The `deploy-templates` plugin is completely backwards compatible with the [step-templates plugin](https://github.com/cultureamp/step-templates-buildkite-plugin), and can be used with the same configuration:
 
 ```yaml
 steps:
@@ -76,7 +58,7 @@ steps:
           selector-template: deploy-selector.yml
 ```
 
-The plugin can be configured to allow automatic deployment to all production accounts, with manual deploy options used from the `selector-template`.
+Instead of maintaining a list of production deploy targets in `auto-selections`, use `auto-deploy-to-production: true` to instead automatically render deployments to all production deploy targets. Sourcing a list of manual deployment targets from the user is still supported through `selector-template`.
 
 ```yaml
 steps:
@@ -87,7 +69,7 @@ steps:
           auto-deploy-to-production: true
 ```
 
-The plugin can be configured to allow automatic deployment to all production accounts, with no manual deploy options.
+Manual deployment by user via `selector-template` may be omitted if not required.
 
 ```yaml
 steps:
@@ -96,6 +78,57 @@ steps:
           step-template: .buildkite/deploy/deploy-steps.yaml
           auto-deploy-to-production: true
 ```
+
+## Centralizing deployment configuration
+
+To reduce the amount of duplicated deployment target configuration spread across many repositories, this plugin uses a centralized location to fetch said config. This gives us a single source of truth for deploy target configuration, alongside allowing easier updates and additions to the targets.
+
+### Configuration bucket layout
+
+This plugin makes use of a centralized method to pull config for repos.
+
+Utilizing Buildkite agents, an environment variable (`BUILDKITE_DEPLOY_CONFIG_S3_PATH`) is set on the agent where config is uploaded, which allows for this plugin to pull config from.
+
+The expected structure at this path is:
+
+    .${BUILDKITE_DEPLOY_CONFIG_S3_PATH}
+    ├── ...
+    ├── environments
+    │   ├── so-fast.env
+    |   └── ...
+    ├── types
+    │   ├── speedy
+    |   └── ...
+    └── ...
+
+To see the associated code, see [here](https://github.com/cultureamp/deploy-templates-buildkite-plugin/blob/551dd75523334bf41709d84dcc2503ae477ef048/lib/steps.bash#L56)
+
+### Environment variable behavior
+
+#### Load order of .env files
+
+The plugin will check for .env files in both S3 and the local repo. Both files will be loaded;contents of local .env files have precedence over files loaded from S3.
+
+#### Behavior depending on .env file contents
+
+This plugin currently requires an `.env` file matching the STEP_ENVIRONMENT name to be present either in the configured S3 bucket, or alongside the step_template file in the repository's .buildkite folder.
+
+If the file is not found in S3, the plugin will check for a matching file in the local repo. If there aren't matching files in either location, the plugin will return an error and prevent further deployment.
+
+Environment files containing only empty lines, or only comments, will not be loaded.
+
+#### Overriding FARM variable when using `auto-deploy-to-production`
+
+When using the `auto-deploy-to-production` functionality, `FARM` will always be set to `production` for use in the templates.
+This value can be overridden on a per target basis by adding `FARM` into a local .env file named after the target.
+
+For example, if `FARM` needs to be set to `demonstration` in the `demo-us` target, the below content should be added into a file called `demo-us.env`.
+This file should be located alongside the configured `step-template`.
+
+```bash
+export FARM=demonstration
+```
+
 
 ## Developing
 
@@ -115,26 +148,6 @@ Running the linter:
 ```shell
 pnpm lint
 ```
-
-### Centralized configuration
-
-This plugin makes use of a centralized method to pull config for repos.
-
-Utilizing Buildkite agents, an environment variable (`BUILDKITE_DEPLOY_CONFIG_S3_PATH`) is set on the agent where config is uploaded, which allows for this plugin to pull config from.
-
-The expected structure at this path is:
-
-    .${BUILDKITE_DEPLOY_CONFIG_S3_PATH}
-    ├── ...
-    ├── environments
-    │   ├── so-fast.env
-    |   └── ...
-    ├── types
-    │   ├── speedy
-    |   └── ...
-    └── ...
-
-To see the associated code, see [here](https://github.com/cultureamp/deploy-templates-buildkite-plugin/blob/551dd75523334bf41709d84dcc2503ae477ef048/lib/steps.bash#L56)
 
 ### Release Management
 

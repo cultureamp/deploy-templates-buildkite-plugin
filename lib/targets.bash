@@ -25,7 +25,7 @@ function download_deploy_types_file() {
   fi
 
   local deploy_types_file="${BUILDKITE_DEPLOY_CONFIG_S3_PATH}/types/${service_name}"
-  
+
   echo "S3 PATH: ${deploy_types_file}"
 
   set +e
@@ -50,9 +50,11 @@ function fetch_deploy_targets {
   local targets
   readarray -t targets <<<"${deploy_targets}"
 
+  local farm="${deploy_type}" # FARM is assumed to be named after the deploy type, i.e. "production"
+
   for target in "${targets[@]}"
   do
-    target_config+=( "${target};${deploy_type}" )
+    target_config+=( "${target};${farm}" )
   done
 
   # config for each target separated by a new line
@@ -64,6 +66,7 @@ function parse_deploy_targets {
   local file=$1
   local deploy_type=$2
 
+  # Utilising a try / catch within jq to error nicely when the deploy_type is not present in the file
   parsed_targets=$(jq -r "try .${deploy_type}[] catch 0" "${file}")
 
   if [[ ${parsed_targets} == 0 ]]; then
