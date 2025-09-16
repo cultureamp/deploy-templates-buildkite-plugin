@@ -19,3 +19,4 @@ spec:
   lifecycle: experimental
   owner: sre-enablement
   generatedFrom: blank-repo-tmpl
+  serviceImpact: Prevents pipelines which use it from deploying.
