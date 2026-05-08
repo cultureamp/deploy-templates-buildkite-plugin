@@ -88,6 +88,20 @@ teardown() {
   assert_line "FARM=\"production\""
 }
 
+@test "Uses service-name override instead of pipeline slug" {
+  export BUILDKITE_PIPELINE_SLUG="wrong-service"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_STEP_TEMPLATE="/tmp/step-template.yaml"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_DEPLOY_TO_PRODUCTION=true
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_SERVICE_NAME="./tests/fixtures/deploy-types/service-a"
+  export RUNNING_TESTS_YO=true
+
+  run "$PWD/hooks/command"
+
+  assert_success
+  assert_line "stubenv(quick): STEP_ENVIRONMENT=quick"
+  assert_line "stubenv(so-fast): STEP_ENVIRONMENT=so-fast"
+}
+
 @test "Fails when both autos and deploy type provided" {
   export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_STEP_TEMPLATE="step-template.yaml"
   export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_DEPLOY_TO_PRODUCTION=true

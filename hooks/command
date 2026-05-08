@@ -81,7 +81,7 @@ if [[ "${auto_deploy_to_production}" == true ]]; then
     # Only supporting "FARM" env var, and "production" deploy type at this stage
     selected_deploy_type="production"
     step_variables="FARM"
-    service_name="${BUILDKITE_PIPELINE_SLUG}"
+    service_name="$(plugin_read_config "SERVICE_NAME" "${BUILDKITE_PIPELINE_SLUG}")"
 
     echo "Finding deploy targets for production..."
 
