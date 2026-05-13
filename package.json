@@ -15,5 +15,10 @@
   "dependencies": {
     "conventional-changelog-conventionalcommits": "^7.0.2",
     "semantic-release": "^22.0.12"
+  },
+  "pnpm": {
+    "overrides": {
+      "handlebars": "4.7.9"
+    }
   }
 }
