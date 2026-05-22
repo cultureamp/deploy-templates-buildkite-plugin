@@ -80,6 +80,7 @@ teardown() {
   run write_steps "$template" "" $'env-a\nenv-b' ":rocket: Deploy"
   assert_success
 
+  refute_output --partial "malformed"
   assert_output --partial 'stubgrouped:pipeline upload'
   assert_output --partial 'group: ":rocket: Deploy"'
   assert_output --partial 'label: "deploy env-a"'
@@ -94,6 +95,7 @@ teardown() {
   run write_steps "$template" "" $'env-a' "My Group"
   assert_success
 
+  refute_output --partial "malformed"
   assert_output --partial 'COMMIT: ${BUILDKITE_COMMIT}'
 }
 
