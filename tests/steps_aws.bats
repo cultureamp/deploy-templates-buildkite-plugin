@@ -1,7 +1,5 @@
 #!/usr/bin/env bats
 
-set -eou pipefail
-
 load "$BATS_PLUGIN_PATH/load.bash"
 load '../lib/steps'
 
