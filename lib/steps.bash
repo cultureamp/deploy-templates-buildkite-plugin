@@ -210,9 +210,12 @@ function write_grouped_steps() {
       printf '%s' "${combined_steps}"
     } > "${tmp_file}"
 
-    if ! head -1 "${tmp_file}" | grep -q '^steps:'; then
+    if ! head -1 "${tmp_file}" | grep -q '^steps:' || \
+       ! grep -q '  - group:' "${tmp_file}" || \
+       ! grep -q '    steps:' "${tmp_file}" || \
+       ! sed -n '/^    steps:$/,$ p' "${tmp_file}" | tail -n +2 | grep -q '[^[:space:]]'; then
       1>&2 echo "+++ ❌ Step templates plugin error"
-      1>&2 echo "Generated grouped YAML is malformed (missing 'steps:' root):"
+      1>&2 echo "Generated grouped YAML is malformed:"
       1>&2 cat "${tmp_file}"
       rm -f "${tmp_file}"
       exit 1

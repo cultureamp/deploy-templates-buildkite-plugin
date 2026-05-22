@@ -122,6 +122,17 @@ TMPL
   assert_output --partial 'label: "deploy env-b to staging"'
 }
 
+@test "write_steps with group-label rejects malformed output from empty template" {
+  cat > /tmp/steps/empty-template.yaml <<'TMPL'
+TMPL
+
+  run write_steps "/tmp/steps/empty-template.yaml" "" $'env-a' "My Group"
+  assert_failure
+
+  assert_output --partial "Step templates plugin error"
+  assert_output --partial "malformed"
+}
+
 @test "write_steps without group-label maintains existing behavior" {
   local template="/tmp/steps/template.yaml"
 
