@@ -9,7 +9,7 @@ jobs:
   backstage-entity-validator:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: RoadieHQ/backstage-entity-validator@v0.3.2
         with:
           path: 'catalog-info*.yaml'
