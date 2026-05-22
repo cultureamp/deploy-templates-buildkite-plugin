@@ -42,6 +42,14 @@ can be overridden on a per target basis by adding `FARM` into a local .env file 
 
 > **Note:** When utilizing `auto-deploy-to-production`, the `auto-selections` and `step-var-names` properties cannot be used.
 
+### `group-label` (Type: string, Optional, Default: undefined)
+
+When provided, all generated steps are wrapped in a Buildkite [group step](https://buildkite.com/docs/pipelines/group-step) with this value as the group label. This produces a collapsible section in the Buildkite pipeline graph, making it easier to visually distinguish different sets of steps (e.g. diff vs deploy).
+
+Without `group-label`, steps appear as flat siblings in the pipeline (existing behavior).
+
+> **Note:** Requires `envsubst` (from the `gettext` package) to be available on the Buildkite agent.
+
 ## Examples
 
 The `deploy-templates` plugin is completely backwards compatible with the [step-templates plugin](https://github.com/cultureamp/step-templates-buildkite-plugin), and can be used with the same configuration:
@@ -77,6 +85,17 @@ steps:
       - cultureamp/deploy-templates#v1.0.5:
           step-template: .buildkite/deploy/deploy-steps.yaml
           auto-deploy-to-production: true
+```
+
+Use `group-label` to wrap generated steps in a collapsible group in the pipeline graph:
+
+```yaml
+steps:
+  - plugins:
+      - cultureamp/deploy-templates#v1.2.0:
+          step-template: .buildkite/deploy/diff-steps.yaml
+          selector-template: .buildkite/deploy/diff-selector.yaml
+          group-label: ":terraform: CDK Diff"
 ```
 
 ## Centralizing deployment configuration

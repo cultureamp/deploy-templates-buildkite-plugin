@@ -1,3 +1,3 @@
 FROM buildkite/plugin-tester
 
-RUN apk add --no-cache grep
+RUN apk add --no-cache grep gettext

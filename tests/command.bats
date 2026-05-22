@@ -15,11 +15,16 @@ setup() {
 
   key: select-key
   '
+  cat > "/tmp/grouped-template.yaml" <<'TMPL'
+steps:
+  - label: "deploy ${STEP_ENVIRONMENT}"
+TMPL
 }
 
 teardown() {
   export PATH="$unstub_path"
   [ -f "/tmp/step-template.yaml" ] && rm /tmp/step-template.yaml
+  [ -f "/tmp/grouped-template.yaml" ] && rm -f /tmp/grouped-template.yaml
 }
 
 @test "Fails when template not provided" {
@@ -98,4 +103,31 @@ teardown() {
 
   assert_failure
   assert_output --partial "Conflict: cannot specify both 'auto-deploy-to-production' and 'auto-selections'"
+}
+
+@test "Writes grouped steps from auto selections with group-label" {
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_STEP_TEMPLATE="/tmp/grouped-template.yaml"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_SELECTIONS_0="auto-one"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_SELECTIONS_1="auto-two"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_GROUP_LABEL=":rocket: Deploy"
+
+  run "$PWD/hooks/command"
+
+  assert_success
+  assert_output --partial 'group: ":rocket: Deploy"'
+  assert_output --partial 'label: "deploy auto-one"'
+  assert_output --partial 'label: "deploy auto-two"'
+}
+
+@test "Writes grouped steps from meta-data selections with group-label" {
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_STEP_TEMPLATE="/tmp/grouped-template.yaml"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_SELECTOR_TEMPLATE="/tmp/selector-template.yaml"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_GROUP_LABEL=":mag: CDK Diff"
+
+  run "$PWD/hooks/command"
+
+  assert_success
+  assert_output --partial 'group: ":mag: CDK Diff"'
+  assert_output --partial 'label: "deploy select-one"'
+  assert_output --partial 'label: "deploy select-two"'
 }

@@ -1,7 +1,5 @@
 #!/usr/bin/env bats
 
-set -eou pipefail
-
 load "$BATS_PLUGIN_PATH/load.bash"
 load '../lib/steps'
 
@@ -16,6 +14,14 @@ setup() {
   cat > /tmp/steps/c.env <<<'
 file_arg=loaded
 '
+
+  cat > /tmp/steps/template.yaml <<'TMPL'
+steps:
+  - label: "deploy ${STEP_ENVIRONMENT}"
+    key: deploy-${STEP_ENVIRONMENT}
+    env:
+      COMMIT: ${BUILDKITE_COMMIT}
+TMPL
 }
 
 teardown() {
@@ -66,4 +72,76 @@ teardown() {
   refute_output --partial "stubenv(a): STEP_VAR_1=aa"
   refute_output --partial "stubenv(c): STEP_VAR_1=c1"
   refute_output --partial "stubenv(c): STEP_VAR_2=c2"
+}
+
+@test "write_steps with group-label wraps steps in a group" {
+  local template="/tmp/steps/template.yaml"
+
+  run write_steps "$template" "" $'env-a\nenv-b' ":rocket: Deploy"
+  assert_success
+
+  refute_output --partial "malformed"
+  assert_output --partial 'stubgrouped:pipeline upload'
+  assert_output --partial 'group: ":rocket: Deploy"'
+  assert_output --partial 'label: "deploy env-a"'
+  assert_output --partial 'label: "deploy env-b"'
+  assert_output --partial 'key: deploy-env-a'
+  assert_output --partial 'key: deploy-env-b'
+}
+
+@test "write_steps with group-label preserves Buildkite runtime variables" {
+  local template="/tmp/steps/template.yaml"
+
+  run write_steps "$template" "" $'env-a' "My Group"
+  assert_success
+
+  refute_output --partial "malformed"
+  assert_output --partial 'COMMIT: ${BUILDKITE_COMMIT}'
+}
+
+@test "write_steps with group-label does single pipeline upload" {
+  local template="/tmp/steps/template.yaml"
+
+  run write_steps "$template" "" $'env-a\nenv-b\nenv-c' "My Group"
+  assert_success
+
+  # Grouped mode: single upload (stubgrouped), not per-env uploads (stubargs)
+  refute_output --partial "stubargs("
+  assert_output --partial "stubgrouped:pipeline upload"
+}
+
+@test "write_steps with group-label substitutes step-var-names per env" {
+  local template="/tmp/steps/template.yaml"
+  cat > "$template" <<'TMPL'
+steps:
+  - label: "deploy ${STEP_ENVIRONMENT} to ${FARM}"
+TMPL
+
+  run write_steps "$template" $'farm' $'env-a;production\nenv-b;staging' "My Group"
+  assert_success
+
+  assert_output --partial 'label: "deploy env-a to production"'
+  assert_output --partial 'label: "deploy env-b to staging"'
+}
+
+@test "write_steps with group-label rejects malformed output from empty template" {
+  cat > /tmp/steps/empty-template.yaml <<'TMPL'
+TMPL
+
+  run write_steps "/tmp/steps/empty-template.yaml" "" $'env-a' "My Group"
+  assert_failure
+
+  assert_output --partial "Step templates plugin error"
+  assert_output --partial "malformed"
+}
+
+@test "write_steps without group-label maintains existing behavior" {
+  local template="/tmp/steps/template.yaml"
+
+  run write_steps "$template" "" $'a\nb'
+  assert_success
+
+  assert_output --partial "stubargs(a):pipeline upload /tmp/steps/template.yaml"
+  assert_output --partial "stubargs(b):pipeline upload /tmp/steps/template.yaml"
+  refute_output --partial "stubgrouped"
 }

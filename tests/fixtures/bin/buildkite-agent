@@ -20,8 +20,19 @@ select-two
     exit
 fi
 
-echo "stubargs($STEP_ENVIRONMENT):$@"
-env | grep STEP_ | xargs -n 1 echo "stubenv($STEP_ENVIRONMENT):"
-env | grep NAMED_ | xargs -n 1 echo "stubnamed($STEP_ENVIRONMENT):"
-env | grep file_ | xargs -n 1 echo "stubfile($STEP_ENVIRONMENT):"
-env | grep AUTO_ | xargs -n 1 echo "stubauto($STEP_ENVIRONMENT):"
+# When pipeline upload is called with a grouped-steps temp file, output
+# the file content so tests can assert on the generated YAML.
+if [[ "${1:-}" == "pipeline" && "${2:-}" == "upload" ]]; then
+    local_file="${3:-}"
+    if [[ -n "${local_file}" && -f "${local_file}" && "$(basename "${local_file}")" == grouped-steps.* ]]; then
+        echo "stubgrouped:pipeline upload"
+        cat "${local_file}"
+        exit
+    fi
+fi
+
+echo "stubargs(${STEP_ENVIRONMENT:-}):$@"
+env | grep STEP_ | xargs -n 1 echo "stubenv(${STEP_ENVIRONMENT:-}):"
+env | grep NAMED_ | xargs -n 1 echo "stubnamed(${STEP_ENVIRONMENT:-}):"
+env | grep file_ | xargs -n 1 echo "stubfile(${STEP_ENVIRONMENT:-}):"
+env | grep AUTO_ | xargs -n 1 echo "stubauto(${STEP_ENVIRONMENT:-}):"
