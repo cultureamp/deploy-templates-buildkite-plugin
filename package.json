@@ -2,6 +2,7 @@
   "name": "deploy-templates-buildkite-plugin",
   "version": "1.0.0",
   "description": "deploy-templates buildkite plugin",
+  "packageManager": "pnpm@9.15.9",
   "main": "index.js",
   "directories": {
     "test": "tests"
