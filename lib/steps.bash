@@ -6,6 +6,12 @@ function write_steps() {
   template="${1}"
   local raw_var_names="${2}"
   local selected_environments="${3}"
+  local group_label="${4:-}"
+
+  if [[ -n "${group_label}" ]]; then
+    write_grouped_steps "${template}" "${raw_var_names}" "${selected_environments}" "${group_label}"
+    return
+  fi
 
   # this is passed as a newline-delimited string, as passing arrays is ... not really a thing
   local var_names
@@ -74,6 +80,141 @@ function write_steps() {
   fi
 }
 
+# Exports a variable and tracks its name for later use with envsubst
+function track_export() {
+  local var_name="${1}"
+  local var_value="${2}"
+  export "${var_name}"="${var_value}"
+  _ENVSUBST_VARS+=" \${${var_name}}"
+}
+
+# Like load_env_file, but also tracks exported variable names in _ENVSUBST_VARS
+function load_env_file_tracked() {
+  local env_file="${1}"
+
+  if ! file_has_useable_content "${env_file}"; then
+    echo "Warning: ${env_file} is empty or contains only comments." >&2
+    return
+  fi
+
+  # Extract variable names before loading
+  local var_names_list=""
+  if grep -q '^export \w' "${env_file}"; then
+    var_names_list="$(grep '^export ' "${env_file}" | sed 's/^export \([A-Za-z_][A-Za-z_0-9]*\).*/\1/')"
+  else
+    var_names_list="$(grep -v '^[[:space:]]*#' "${env_file}" | grep '=' | sed 's/^\([A-Za-z_][A-Za-z_0-9]*\)=.*/\1/' || true)"
+  fi
+
+  load_env_file "${env_file}"
+
+  while IFS= read -r name; do
+    if [[ -n "${name}" ]]; then
+      _ENVSUBST_VARS+=" \${${name}}"
+    fi
+  done <<<"${var_names_list}"
+}
+
+# Renders a step template for a single environment using envsubst.
+# Per-environment variables are substituted; all others are left intact.
+# Rendered YAML is written to stdout; diagnostic messages go to stderr.
+function render_template_for_env() {
+  local template="${1}"
+  local raw_var_names="${2}"
+  local selection="${3}"
+
+  local var_names
+  readarray -t var_names <<<"${raw_var_names}"
+
+  IFS=';' read -ra step_vars <<<"${selection}"
+
+  _ENVSUBST_VARS=""
+  local step_env=""
+
+  local msg="--- Writing template \"${template}\""
+
+  if [[ ${#step_vars[@]} -gt 0 ]]; then
+    step_env="${step_vars[0]}"
+    step_env="$(printf '%s' "${step_env}")"
+    msg+=" for environment \"${step_env}\""
+  fi
+
+  track_export "STEP_ENVIRONMENT" "${step_env}"
+
+  echo "${msg}" >&2
+  echo "Environment setup:" >&2
+  echo "STEP_ENVIRONMENT=\"${STEP_ENVIRONMENT}\"" >&2
+
+  for ((i = 1; i < ${#step_vars[@]}; ++i)); do
+    val="$(printf '%s' "${step_vars[${i}]}")"
+
+    nm_idx=${i}-1
+    var_name="step_var_${i}"
+    if [[ ${#var_names[@]} -gt ${nm_idx} && -n "${var_names[${nm_idx}]}" ]]; then
+      var_name="${var_names[${nm_idx}]}"
+    fi
+
+    echo "${var_name^^}=\"${val}\"" >&2
+    track_export "${var_name^^}" "${val}"
+  done
+
+  if [[ -n "${BUILDKITE_DEPLOY_CONFIG_S3_PATH:-}" ]]; then
+    download_and_load_env_file "${BUILDKITE_DEPLOY_CONFIG_S3_PATH}" "${STEP_ENVIRONMENT}" "load_env_file_tracked" >&2
+  else
+    echo "=> BUILDKITE_DEPLOY_CONFIG_S3_PATH is not set, skipping .env file download." >&2
+  fi
+
+  local env_file
+  env_file="$(local_env_file "${template}" "${step_env}")"
+
+  if file_exists_and_not_empty "${env_file}"; then
+    echo "=> loading local ${env_file} into environment..." >&2
+    load_env_file_tracked "${env_file}"
+  fi
+
+  envsubst "${_ENVSUBST_VARS}" < "${template}"
+}
+
+# Renders steps for all environments and wraps them in a Buildkite group step.
+function write_grouped_steps() {
+  local template="${1}"
+  local raw_var_names="${2}"
+  local selected_environments="${3}"
+  local group_label="${4}"
+
+  local combined_steps=""
+
+  if [[ -n "${selected_environments}" ]]; then
+    while IFS=$'\n' read -r selection; do
+      if [[ -z ${selection} ]]; then
+        continue
+      fi
+
+      local rendered
+      rendered="$(render_template_for_env "${template}" "${raw_var_names}" "${selection}")"
+
+      local indented
+      indented="$(echo "${rendered}" | sed '/^steps:[[:space:]]*$/d' | sed 's/^/    /')"
+      combined_steps+="${indented}"$'\n'
+
+    done <<<"${selected_environments}"
+  fi
+
+  if [[ -n "${combined_steps}" ]]; then
+    local tmp_file
+    tmp_file="$(mktemp)"
+
+    {
+      echo "steps:"
+      echo "  - group: \"${group_label}\""
+      echo "    steps:"
+      printf '%s' "${combined_steps}"
+    } > "${tmp_file}"
+
+    buildkite-agent pipeline upload "${tmp_file}"
+    rm -f "${tmp_file}"
+  fi
+}
+
 # Generate the filename for the env file based on template location.
 function local_env_file() {
   local template="${1}"
@@ -115,6 +256,7 @@ function load_env_file() {
 function download_and_load_env_file() {
   local s3_bucket_path="${1}/environments"
   local step_environment="${2}"
+  local load_fn="${3:-load_env_file}"
   
   echo "BUCKET: ${s3_bucket_path}"
   echo "ENV: ${step_environment}"
@@ -145,7 +287,7 @@ function download_and_load_env_file() {
   fi
 
   echo "loading central config ${env_config_file} into environment..."
-  load_env_file "${step_environment}.env"
+  "${load_fn}" "${step_environment}.env"
 }
 
 # Check if the file exists and is not empty
