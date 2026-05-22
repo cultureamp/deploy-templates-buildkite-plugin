@@ -20,12 +20,11 @@ select-two
     exit
 fi
 
-# When pipeline upload is called with a temp file (grouped mode creates a mktemp file),
-# output the file content so tests can assert on the generated YAML.
-# Regular template uploads use .yaml/.yml files and fall through to stubargs output.
+# When pipeline upload is called with a grouped-steps temp file, output
+# the file content so tests can assert on the generated YAML.
 if [[ "${1:-}" == "pipeline" && "${2:-}" == "upload" ]]; then
     local_file="${3:-}"
-    if [[ -n "${local_file}" && -f "${local_file}" && "${local_file}" != *.yaml && "${local_file}" != *.yml ]]; then
+    if [[ -n "${local_file}" && -f "${local_file}" && "$(basename "${local_file}")" == grouped-steps.* ]]; then
         echo "stubgrouped:pipeline upload"
         cat "${local_file}"
         exit

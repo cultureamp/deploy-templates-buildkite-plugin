@@ -201,7 +201,7 @@ function write_grouped_steps() {
 
   if [[ -n "${combined_steps}" ]]; then
     local tmp_file
-    tmp_file="$(mktemp)"
+    tmp_file="$(mktemp /tmp/grouped-steps.XXXXXX)"
 
     {
       echo "steps:"
@@ -209,6 +209,14 @@ function write_grouped_steps() {
       echo "    steps:"
       printf '%s' "${combined_steps}"
     } > "${tmp_file}"
+
+    if ! head -1 "${tmp_file}" | grep -q '^steps:'; then
+      1>&2 echo "+++ ❌ Step templates plugin error"
+      1>&2 echo "Generated grouped YAML is malformed (missing 'steps:' root):"
+      1>&2 cat "${tmp_file}"
+      rm -f "${tmp_file}"
+      exit 1
+    fi
 
     buildkite-agent pipeline upload "${tmp_file}"
     rm -f "${tmp_file}"
