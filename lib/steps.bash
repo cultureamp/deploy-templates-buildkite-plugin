@@ -80,15 +80,15 @@ function write_steps() {
   fi
 }
 
-# Exports a variable and tracks its name for later use with envsubst
+# Exports a variable and tracks its name for later substitution
 function track_export() {
   local var_name="${1}"
   local var_value="${2}"
   export "${var_name}"="${var_value}"
-  _ENVSUBST_VARS+=" \${${var_name}}"
+  _TRACKED_VARS+=" ${var_name}"
 }
 
-# Like load_env_file, but also tracks exported variable names in _ENVSUBST_VARS
+# Like load_env_file, but also tracks exported variable names in _TRACKED_VARS
 function load_env_file_tracked() {
   local env_file="${1}"
 
@@ -109,13 +109,38 @@ function load_env_file_tracked() {
 
   while IFS= read -r name; do
     if [[ -n "${name}" ]]; then
-      _ENVSUBST_VARS+=" \${${name}}"
+      _TRACKED_VARS+=" ${name}"
     fi
   done <<<"${var_names_list}"
 }
 
-# Renders a step template for a single environment using envsubst.
-# Per-environment variables are substituted; all others are left intact.
+# Substitutes tracked variables in a template file, handling both ${VAR} and
+# ${VAR:-default} syntax. Only tracked variables are replaced; all others
+# (e.g. BUILDKITE_* runtime vars) are left intact for the agent to resolve.
+function substitute_tracked_vars() {
+  local template_file="${1}"
+  local result
+  result="$(< "${template_file}")"
+
+  local var_name var_value escaped_value
+  for var_name in ${_TRACKED_VARS}; do
+    var_value="${!var_name:-}"
+
+    escaped_value="$(printf '%s' "${var_value}" | sed -e 's/[&\\/]/\\&/g')"
+
+    # Replace ${VAR:-...} — handles one level of nested braces in the default
+    result="$(printf '%s\n' "${result}" | sed -E "s/\\$\\{${var_name}:-([^{}]*(\\{[^{}]*\\}[^{}]*)*)\\}/${escaped_value}/g")"
+
+    # Replace ${VAR}
+    result="$(printf '%s\n' "${result}" | sed "s/\\\${${var_name}}/${escaped_value}/g")"
+  done
+
+  printf '%s\n' "${result}"
+}
+
+# Renders a step template for a single environment.
+# Per-environment variables are substituted (including ${VAR:-default} syntax);
+# all others (e.g. BUILDKITE_* runtime vars) are left intact.
 # Rendered YAML is written to stdout; diagnostic messages go to stderr.
 function render_template_for_env() {
   local template="${1}"
@@ -127,7 +152,7 @@ function render_template_for_env() {
 
   IFS=';' read -ra step_vars <<<"${selection}"
 
-  _ENVSUBST_VARS=""
+  _TRACKED_VARS=""
   local step_env=""
 
   local msg="--- Writing template \"${template}\""
@@ -171,7 +196,7 @@ function render_template_for_env() {
     load_env_file_tracked "${env_file}"
   fi
 
-  envsubst "${_ENVSUBST_VARS}" < "${template}"
+  substitute_tracked_vars "${template}"
 }
 
 # Renders steps for all environments and wraps them in a Buildkite group step.
