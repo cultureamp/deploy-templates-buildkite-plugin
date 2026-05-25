@@ -119,23 +119,23 @@ function load_env_file_tracked() {
 # (e.g. BUILDKITE_* runtime vars) are left intact for the agent to resolve.
 function substitute_tracked_vars() {
   local template_file="${1}"
-  local result
-  result="$(< "${template_file}")"
 
+  local sed_script=""
   local var_name var_value escaped_value
   for var_name in ${_TRACKED_VARS}; do
     var_value="${!var_name:-}"
-
     escaped_value="$(printf '%s' "${var_value}" | sed -e 's/[&\\/]/\\&/g')"
 
-    # Replace ${VAR:-...} — handles one level of nested braces in the default
-    result="$(printf '%s\n' "${result}" | sed -E "s/\\$\\{${var_name}:-([^{}]*(\\{[^{}]*\\}[^{}]*)*)\\}/${escaped_value}/g")"
-
-    # Replace ${VAR}
-    result="$(printf '%s\n' "${result}" | sed "s/\\\${${var_name}}/${escaped_value}/g")"
+    sed_script+="s/\\$\\{${var_name}:-([^{}]*(\\{[^{}]*\\}[^{}]*)*)\\}/${escaped_value}/g;"
+    sed_script+="s/\\$\\{${var_name}\\}/${escaped_value}/g;"
   done
 
-  printf '%s\n' "${result}"
+  if [[ -z "${sed_script}" ]]; then
+    cat "${template_file}"
+    return
+  fi
+
+  sed -E "${sed_script}" "${template_file}"
 }
 
 # Renders a step template for a single environment.

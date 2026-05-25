@@ -64,7 +64,7 @@ fi
 # returning a list of the selections)
 key=""
 if [[ -z "$key" && -f "${selector_template}" ]]; then
-  key="$(grep -P -o "(?<=key: )[\w-]+" "${selector_template}" | head -n1 || true)"
+  key="$(grep -E -o 'key: [A-Za-z0-9_-]+' "${selector_template}" | head -n1 | sed 's/^key: //' || true)"
 fi
 
 if [[ -n "${key}" ]]; then
