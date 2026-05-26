@@ -161,6 +161,25 @@ TMPL
   assert_output --partial 'infrastructure-${DEPLOYMENT_TYPE:-unrestricted}'
 }
 
+@test "write_steps with group-label uses default when tracked variable is empty" {
+  cat > /tmp/steps/template-defaults3.yaml <<'TMPL'
+steps:
+  - label: "deploy ${STEP_ENVIRONMENT}"
+    agents:
+      queue: infrastructure-${DEPLOYMENT_TYPE:-unrestricted}
+TMPL
+
+  cat > /tmp/steps/env-empty.env <<'ENV'
+export DEPLOYMENT_TYPE=""
+ENV
+
+  run write_steps "/tmp/steps/template-defaults3.yaml" "" $'env-empty' "My Group"
+  assert_success
+
+  # DEPLOYMENT_TYPE is tracked but empty, so the default "unrestricted" should be used
+  assert_output --partial 'queue: infrastructure-unrestricted'
+}
+
 @test "write_steps with group-label rejects malformed output from empty template" {
   cat > /tmp/steps/empty-template.yaml <<'TMPL'
 TMPL

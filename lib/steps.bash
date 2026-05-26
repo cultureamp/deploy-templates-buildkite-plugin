@@ -126,7 +126,11 @@ function substitute_tracked_vars() {
     var_value="${!var_name:-}"
     escaped_value="$(printf '%s' "${var_value}" | sed -e 's/[&\\/]/\\&/g')"
 
-    sed_script+="s/\\$\\{${var_name}:-([^{}]*(\\{[^{}]*\\}[^{}]*)*)\\}/${escaped_value}/g;"
+    if [[ -n "${var_value}" ]]; then
+      sed_script+="s/\\$\\{${var_name}:-([^{}]*(\\{[^{}]*\\}[^{}]*)*)\\}/${escaped_value}/g;"
+    else
+      sed_script+="s/\\$\\{${var_name}:-([^{}]*(\\{[^{}]*\\}[^{}]*)*)\\}/\\1/g;"
+    fi
     sed_script+="s/\\$\\{${var_name}\\}/${escaped_value}/g;"
   done
 
