@@ -17,12 +17,6 @@ auto_selections="$(plugin_read_list "AUTO_SELECTIONS")"
 auto_deploy_to_production="$(plugin_read_list "AUTO_DEPLOY_TO_PRODUCTION")"
 group_label="$(plugin_read_config "GROUP_LABEL" "")"
 
-if [[ -n "${group_label}" ]] && ! command -v envsubst &>/dev/null; then
-  1>&2 echo "+++ ❌ Step templates plugin error"
-  1>&2 echo "'group-label' requires 'envsubst' (gettext) to be available on the agent."
-  exit 1
-fi
-
 if [[ -z "${step_template}" ]] ; then
   1>&2 echo "+++ ❌ Step templates plugin error"
   1>&2 echo "No 'step_template' argument provided: cannot produce pipeline fragments without the template."
@@ -70,7 +64,7 @@ fi
 # returning a list of the selections)
 key=""
 if [[ -z "$key" && -f "${selector_template}" ]]; then
-  key="$(grep -P -o "(?<=key: )[\w-]+" "${selector_template}" | head -n1 || true)"
+  key="$(grep -E -o 'key: [A-Za-z0-9_-]+' "${selector_template}" | head -n1 | sed 's/^key: //' || true)"
 fi
 
 if [[ -n "${key}" ]]; then

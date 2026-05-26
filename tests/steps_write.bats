@@ -124,6 +124,62 @@ TMPL
   assert_output --partial 'label: "deploy env-b to staging"'
 }
 
+@test "write_steps with group-label substitutes variables with default syntax" {
+  cat > /tmp/steps/template-defaults.yaml <<'TMPL'
+steps:
+  - label: "deploy ${STEP_ENVIRONMENT}"
+    agents:
+      queue: infrastructure-${DEPLOYMENT_TYPE:-unrestricted}
+    branches: ${AUTO_SELECTION_DEFAULT_BRANCH:-${ALLOWED_BRANCHES}}
+TMPL
+
+  cat > /tmp/steps/env-a.env <<'ENV'
+export DEPLOYMENT_TYPE="restricted"
+export ALLOWED_BRANCHES="main"
+ENV
+
+  run write_steps "/tmp/steps/template-defaults.yaml" "" $'env-a' "My Group"
+  assert_success
+
+  assert_output --partial 'queue: infrastructure-restricted'
+  refute_output --partial 'unrestricted'
+}
+
+@test "write_steps with group-label preserves defaults for unset variables" {
+  cat > /tmp/steps/template-defaults2.yaml <<'TMPL'
+steps:
+  - label: "deploy ${STEP_ENVIRONMENT}"
+    agents:
+      queue: infrastructure-${DEPLOYMENT_TYPE:-unrestricted}
+TMPL
+
+  run write_steps "/tmp/steps/template-defaults2.yaml" "" $'env-x' "My Group"
+  assert_success
+
+  # DEPLOYMENT_TYPE is not set for env-x, so the full ${...:-...} must survive
+  # for the Buildkite agent to resolve at runtime
+  assert_output --partial 'infrastructure-${DEPLOYMENT_TYPE:-unrestricted}'
+}
+
+@test "write_steps with group-label uses default when tracked variable is empty" {
+  cat > /tmp/steps/template-defaults3.yaml <<'TMPL'
+steps:
+  - label: "deploy ${STEP_ENVIRONMENT}"
+    agents:
+      queue: infrastructure-${DEPLOYMENT_TYPE:-unrestricted}
+TMPL
+
+  cat > /tmp/steps/env-empty.env <<'ENV'
+export DEPLOYMENT_TYPE=""
+ENV
+
+  run write_steps "/tmp/steps/template-defaults3.yaml" "" $'env-empty' "My Group"
+  assert_success
+
+  # DEPLOYMENT_TYPE is tracked but empty, so the default "unrestricted" should be used
+  assert_output --partial 'queue: infrastructure-unrestricted'
+}
+
 @test "write_steps with group-label rejects malformed output from empty template" {
   cat > /tmp/steps/empty-template.yaml <<'TMPL'
 TMPL
