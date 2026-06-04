@@ -6,9 +6,21 @@ This plugin aims to extend the functionality from the [step-templates plugin](ht
 
 ## Plugin Properties
 
-### `step-template` (Type: string, Required)
+### `step-template` (Type: string, Required if `built-in-template` is not set)
 
 See property description from [step-templates plugin](https://github.com/cultureamp/step-templates-buildkite-plugin?tab=readme-ov-file#step-template-required-string).
+
+### `built-in-template` (Type: string, Required if `step-template` is not set)
+
+Use a step template that ships with this plugin instead of authoring your own. Mutually exclusive with `step-template`.
+
+Supported values:
+
+| Value            | Description                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------------- |
+| `harness-deploy` | Triggers a Harness deployment for `STEP_ENVIRONMENT` via the `cultureamp/harness-deploy` plugin |
+
+The built-in template reads deployment values from the environment (typically supplied via per-target `.env` files). See `templates/harness-deploy.yml` for the list of variables it expects.
 
 ### `step-var-names` (Type: string[], Optional, Default: undefined)
 
@@ -86,6 +98,20 @@ steps:
           step-template: .buildkite/deploy/deploy-steps.yaml
           auto-deploy-to-production: true
 ```
+
+### Using the built-in `harness-deploy` template
+
+Skip authoring your own `step-template` and use the canonical Harness deploy step that ships with this plugin:
+
+```yaml
+steps:
+  - plugins:
+      - cultureamp/deploy-templates#v1.3.1:
+          built-in-template: harness-deploy
+          auto-deploy-to-production: true
+```
+
+Each rendered step invokes the `cultureamp/harness-deploy` plugin with values pulled from the consumer's `.env` files for the deploy target. See `templates/harness-deploy.yml` for the full list of variables consumed.
 
 Use `group-label` to wrap generated steps in a collapsible group in the pipeline graph:
 

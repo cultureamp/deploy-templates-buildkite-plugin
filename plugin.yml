@@ -6,6 +6,11 @@ configuration:
   properties:
     step-template:
       type: string
+    built-in-template:
+      type: string
+      enum:
+        - harness-deploy
+      description: "Use a step template shipped with this plugin instead of authoring your own. Mutually exclusive with step-template."
     step-var-names:
       type: array
     auto-selections:
@@ -18,13 +23,15 @@ configuration:
     group-label:
       type: string
   additionalProperties: false
+  oneOf:
+    - required:
+        - step-template
+    - required:
+        - built-in-template
   anyOf:
     - required:
-        - step-template
         - auto-selections
     - required:
-        - step-template
         - selector-template
     - required:
-        - step-template
         - auto-deploy-to-production

@@ -1,0 +1,29 @@
+# Canonical step template that triggers a Harness deployment for the current
+# STEP_ENVIRONMENT. Consumers select this via `built-in-template: harness-deploy`
+# instead of authoring their own step-template YAML.
+#
+# Variables consumed (typically supplied via the consumer's .env files):
+#   DEPLOYMENT_TYPE     Harness organisation identifier (e.g. unrestricted, restricted)
+#   IMAGE_URI           Fully-qualified URI of the image the Harness deployer runs
+#   WORKDIR             Working directory inside the deployer image
+#   AWS_ACCOUNT_ID      Target account
+#   DEFAULT_REGION      Target region
+#   DEPLOYED_IMAGE_URI  URI of the service image that will be deployed (for downstream
+#                       tasks like post-deploy tagging)
+#   FARM                Deployment farm (auto-set when using auto-deploy-to-production;
+#                       overridable per-target via .env)
+#
+# TODO: pin to a released version of harness-deploy that exposes deployed_image_uris.
+steps:
+  - label: ":harness: Harness deploy to ${STEP_ENVIRONMENT}"
+    plugins:
+      - cultureamp/harness-deploy#vNEXT:
+          org: "${DEPLOYMENT_TYPE}"
+          environment: ${STEP_ENVIRONMENT}
+          image_uri: "${IMAGE_URI}"
+          workdir: "${WORKDIR}"
+          aws_account_id: "${AWS_ACCOUNT_ID}"
+          default_region: "${DEFAULT_REGION}"
+          farm: "${FARM}"
+          deployed_image_uris:
+            - "${DEPLOYED_IMAGE_URI}"
