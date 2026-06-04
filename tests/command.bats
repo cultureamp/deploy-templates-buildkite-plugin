@@ -27,11 +27,43 @@ teardown() {
   [ -f "/tmp/grouped-template.yaml" ] && rm -f /tmp/grouped-template.yaml
 }
 
-@test "Fails when template not provided" {
+@test "Fails when neither step-template nor built-in-template provided" {
   run "$PWD/hooks/command"
 
   assert_failure
-  assert_output --partial "No 'step_template' argument provided"
+  assert_output --partial "Neither 'step-template' nor 'built-in-template' provided"
+}
+
+@test "Fails when both step-template and built-in-template provided" {
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_STEP_TEMPLATE="/tmp/step-template.yaml"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_BUILT_IN_TEMPLATE="harness-deploy"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_SELECTIONS_0="auto-one"
+
+  run "$PWD/hooks/command"
+
+  assert_failure
+  assert_output --partial "Conflict: cannot specify both 'step-template' and 'built-in-template'"
+}
+
+@test "Fails when built-in-template is unknown" {
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_BUILT_IN_TEMPLATE="not-a-real-template"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_SELECTIONS_0="auto-one"
+
+  run "$PWD/hooks/command"
+
+  assert_failure
+  assert_output --partial "Unknown built-in-template"
+  assert_output --partial "not-a-real-template"
+}
+
+@test "Resolves built-in-template harness-deploy from the plugin's templates dir" {
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_BUILT_IN_TEMPLATE="harness-deploy"
+  export BUILDKITE_PLUGIN_DEPLOY_TEMPLATES_AUTO_SELECTIONS_0="auto-one"
+
+  run "$PWD/hooks/command"
+
+  assert_success
+  assert_output --partial "templates/harness-deploy.yml"
 }
 
 @test "Fails when selector, autos or auto-deploy-prod not provided" {

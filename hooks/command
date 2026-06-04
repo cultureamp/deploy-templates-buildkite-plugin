@@ -11,15 +11,38 @@ DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 . "$DIR/../lib/targets.bash"
 
 step_template="$(plugin_read_config "STEP_TEMPLATE")"
+built_in_template="$(plugin_read_config "BUILT_IN_TEMPLATE")"
 selector_template="$(plugin_read_config "SELECTOR_TEMPLATE")"
 step_var_names="$(plugin_read_list "STEP_VAR_NAMES")"
 auto_selections="$(plugin_read_list "AUTO_SELECTIONS")"
 auto_deploy_to_production="$(plugin_read_list "AUTO_DEPLOY_TO_PRODUCTION")"
 group_label="$(plugin_read_config "GROUP_LABEL" "")"
 
+if [[ -n "${step_template}" ]] && [[ -n "${built_in_template}" ]]; then
+  1>&2 echo "+++ ❌ Step templates plugin error"
+  1>&2 echo "Conflict: cannot specify both 'step-template' and 'built-in-template'."
+  exit 1
+fi
+
+# Resolve built-in-template into a real path so the rest of the script can treat
+# both inputs uniformly.
+if [[ -n "${built_in_template}" ]]; then
+  case "${built_in_template}" in
+    harness-deploy)
+      step_template="${DIR}/../templates/harness-deploy.yml"
+      ;;
+    *)
+      1>&2 echo "+++ ❌ Step templates plugin error"
+      1>&2 echo "Unknown built-in-template: '${built_in_template}'."
+      1>&2 echo "Supported values: harness-deploy"
+      exit 1
+      ;;
+  esac
+fi
+
 if [[ -z "${step_template}" ]] ; then
   1>&2 echo "+++ ❌ Step templates plugin error"
-  1>&2 echo "No 'step_template' argument provided: cannot produce pipeline fragments without the template."
+  1>&2 echo "Neither 'step-template' nor 'built-in-template' provided: cannot produce pipeline fragments without a template."
   exit 1
 fi
 
