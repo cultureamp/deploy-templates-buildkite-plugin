@@ -157,7 +157,7 @@ Each run sets build meta-data that Datadog CI Visibility shows as tags on the pi
 | `deploy.plugin` | `deploy-templates` | always |
 | `deploy_templates.version` | this plugin's version, e.g. `v1.3.1` | the version is in `BUILDKITE_PLUGINS` |
 | `deploy.system` | `aqua` | the step template uses `cultureamp/ecs-deploy` |
-| `ecs_deploy.version` | the ecs-deploy version in the template, e.g. `v1.11.2` | the step template uses `cultureamp/ecs-deploy` |
+| `deploy.ecs_deploy_ref` | the ecs-deploy reference in the template, e.g. `v1.11.2` | the step template uses `cultureamp/ecs-deploy` |
 
 Failing to set a tag prints a warning and never fails the step.
 

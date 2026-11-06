@@ -29,6 +29,6 @@ function tag_build_for_datadog() {
   ecs_deploy_ref="$(grep -oE 'cultureamp/ecs-deploy(-buildkite-plugin)?#v[0-9][0-9.]*' "${template}" | head -n1 || true)"
   if [[ -n "${ecs_deploy_ref}" ]]; then
     set_dd_tag "deploy.system" "aqua"
-    set_dd_tag "ecs_deploy.version" "${ecs_deploy_ref#*#}"
+    set_dd_tag "deploy.ecs_deploy_ref" "${ecs_deploy_ref#*#}"
   fi
 }

@@ -36,7 +36,7 @@ teardown() {
   assert_success
   assert_output --partial "stubargs():meta-data set dd_tags.deploy.plugin deploy-templates"
   assert_output --partial "stubargs():meta-data set dd_tags.deploy.system aqua"
-  assert_output --partial "stubargs():meta-data set dd_tags.ecs_deploy.version v1.11.2"
+  assert_output --partial "stubargs():meta-data set dd_tags.deploy.ecs_deploy_ref v1.11.2"
 }
 
 @test "Tags a non-Aqua build with the plugin only" {
@@ -47,7 +47,7 @@ teardown() {
   assert_success
   assert_output --partial "stubargs():meta-data set dd_tags.deploy.plugin deploy-templates"
   refute_output --partial "dd_tags.deploy.system"
-  refute_output --partial "dd_tags.ecs_deploy.version"
+  refute_output --partial "dd_tags.deploy.ecs_deploy_ref"
 }
 
 @test "Tags the deploy-templates version from BUILDKITE_PLUGINS" {
