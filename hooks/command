@@ -9,6 +9,8 @@ DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 . "$DIR/../lib/steps.bash"
 # shellcheck source=lib/targets.bash
 . "$DIR/../lib/targets.bash"
+# shellcheck source=lib/telemetry.bash
+. "$DIR/../lib/telemetry.bash"
 
 step_template="$(plugin_read_config "STEP_TEMPLATE")"
 selector_template="$(plugin_read_config "SELECTOR_TEMPLATE")"
@@ -49,6 +51,7 @@ if [[ ! -f "${step_template}" ]]; then
   exit 1
 fi
 
+tag_build_for_datadog "${step_template}"
 
 # template fragements are written in reverse order: each fragment will be rendered immediately
 # after the currently executing step.

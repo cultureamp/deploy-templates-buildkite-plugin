@@ -20,6 +20,11 @@ select-two
     exit
 fi
 
+if [[ "${1:-}" == "meta-data" && "${2:-}" == "set" && "${STUB_META_DATA_SET_FAIL:-}" == "1" ]]; then
+    1>&2 echo "stub: meta-data set failed"
+    exit 1
+fi
+
 # When pipeline upload is called with a grouped-steps temp file, output
 # the file content so tests can assert on the generated YAML.
 if [[ "${1:-}" == "pipeline" && "${2:-}" == "upload" ]]; then
